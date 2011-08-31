@@ -8,11 +8,12 @@ OBJS   = $(SRCS:.s=.o)
 
 all:	$(TARGET)
 
+.SUFFIXES: .s
 .s.o:
 	$(AS) $^ -o $@
 
 $(TARGET):
-	$(LD) -o $@ $< -T ld.script
+	$(LD) -o $@ $^ -T ld.script
 
 .PHONY: clean
 clean:
@@ -23,5 +24,5 @@ clean:
 header.o: header.s
 boot.o: boot.s
 trailer.o: trailer.s
-mbr.bin: header.o boot.o trailer.o
+boot.bin: header.o boot.o trailer.o
 
