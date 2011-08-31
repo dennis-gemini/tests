@@ -1,4 +1,6 @@
 SECTIONS {
+	. = 0x7c00;
+
 	.text : {
 		header.o  *(.text);
 		boot.o    *(.text);

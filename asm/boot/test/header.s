@@ -1,6 +1,6 @@
 .code16
 .text
-header: jmp start
+	jmp start
 	nop
 
 	.ascii "-DENNIS-"             #OEM name
