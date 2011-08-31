@@ -1,0 +1,8 @@
+SECTIONS {
+	.text : {
+		header.o  *(.text);
+		boot.o    *(.text);
+		trailer.o *(.text);
+		_etext = .;
+	}
+}
