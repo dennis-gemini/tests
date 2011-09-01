@@ -3,7 +3,7 @@ SECTIONS {
 
 	.text : {
 		start = .;
-		header.o  (.text);
+		bpb.o     (.text);
 		boot.o    (.text);
 		. = start + 508;
 		trailer.o (.text);

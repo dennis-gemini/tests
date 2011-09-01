@@ -1,3 +1,6 @@
+# Reference of FAT12/FAT16/FAT32 formats:
+# 	http://www.microsoft.com/whdc/system/platform/firmware/fatgen.mspx
+
 .code16
 .text
 	jmp start                     # eb <offset16>

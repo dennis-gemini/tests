@@ -1,6 +1,6 @@
 TARGET = boot.bin
 
-SRCS   = header.s \
+SRCS   = bpb.s \
          boot.s \
          trailer.s
 
@@ -24,9 +24,9 @@ clean:
 
 -include *.d
 
-header.o: header.s
+bpb.o: bpb.s
 boot.o: boot.s
 trailer.o: trailer.s
-boot.elf: header.o boot.o trailer.o
+boot.elf: bpb.o boot.o trailer.o
 boot.bin: boot.elf
 
