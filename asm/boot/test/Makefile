@@ -1,4 +1,4 @@
-TARGET = boot.bin
+TARGET = boot.img
 
 SRCS   = bpb.s \
          boot.s \
@@ -15,12 +15,16 @@ all:	$(TARGET)
 %.elf:
 	$(LD) -o $@ -T $(@:.elf=.ld)
 
-$(TARGET):
+%.bin:
 	objcopy -j .text -O binary $^ $@
+
+%.img:
+	dd if=$^ of=$@ bs=512 count=1
+	dd if=/dev/zero of=$@ skip=1 seek=1 bs=512 count=$$((2880 - 1))
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET) $(OBJS) *.elf
+	rm -f $(TARGET) $(OBJS) *.bin *.elf
 
 -include *.d
 
@@ -29,4 +33,5 @@ boot.o: boot.s
 trailer.o: trailer.s
 boot.elf: bpb.o boot.o trailer.o
 boot.bin: boot.elf
+boot.img: boot.bin
 
