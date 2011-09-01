@@ -13,14 +13,14 @@ all:	$(TARGET)
 	$(AS) $^ -o $@
 
 %.elf:
-	$(LD) -o $@ -T ld.script
+	$(LD) -o $@ -T $(@:.elf=.ld)
 
 $(TARGET):
 	objcopy -j .text -O binary $^ $@
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET) $(OBJS) *.bin
+	rm -f $(TARGET) $(OBJS) *.elf
 
 -include *.d
 
