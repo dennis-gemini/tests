@@ -2,10 +2,10 @@ SECTIONS {
 	. = 0x7c00;
 
 	.text : {
-		start = .;
+		.text_begin = .;
 		bpb.o     (.text);
 		boot.o    (.text);
-		. = start + 508;
+		. = .text_begin + 508;
 		trailer.o (.text);
 	}
 }
