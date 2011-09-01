@@ -1,4 +1,4 @@
-TARGET = boot.mbr
+TARGET = boot.bin
 
 SRCS   = header.s \
          boot.s \
@@ -12,11 +12,11 @@ all:	$(TARGET)
 .s.o:
 	$(AS) $^ -o $@
 
-%.bin:
-	$(LD) -o $@ $^ -T ld.script
+%.elf:
+	$(LD) -o $@ -T ld.script
 
 $(TARGET):
-	objcopy -j .text $^ $@
+	objcopy -j .text -O binary $^ $@
 
 .PHONY: clean
 clean:
@@ -27,6 +27,6 @@ clean:
 header.o: header.s
 boot.o: boot.s
 trailer.o: trailer.s
-boot.bin: header.o boot.o trailer.o
-boot.mbr: boot.bin
+boot.elf: header.o boot.o trailer.o
+boot.bin: boot.elf
 

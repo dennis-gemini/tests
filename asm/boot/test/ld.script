@@ -2,9 +2,10 @@ SECTIONS {
 	. = 0x7c00;
 
 	.text : {
-		header.o  *(.text);
-		boot.o    *(.text);
-		trailer.o *(.text);
-		_etext = .;
+		start = .;
+		header.o  (.text);
+		boot.o    (.text);
+		. = start + 508;
+		trailer.o (.text);
 	}
 }

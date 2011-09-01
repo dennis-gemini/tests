@@ -1,7 +1,7 @@
 .code16
 .text
-	jmp start
-	nop
+	jmp start                     # eb <offset16>
+	nop                           # 90
 
 	.ascii "-DENNIS-"             #OEM name
 	.short 512                    #Bytes per sector
@@ -14,12 +14,12 @@
 	.short 9                      #FAT size (16-bit)
 	.short 18                     #Sectors per track
 	.short 2                      #Number of heads
-	.word  0                      #Hidden sector
-	.word  0                      #Total sector (32-bit)
+	.int   0                      #Hidden sector
+	.int   0                      #Total sector (32-bit)
 	.byte  0                      #Drive number
 	.byte  0                      #Reserved
 	.byte  0x29                   #Boot signature         
-	.word  0                      #Volume ID
+	.int   0                      #Volume ID
 	.ascii "BootableDsk"          #Volume label
 	.ascii "FAT12   "             #File system type
 start:
