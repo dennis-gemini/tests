@@ -5,11 +5,12 @@
 
 .code16
 .text
+.extern start
                 #
                 #Common part for FAT12/FAT16/FAT32
                 #
-                jmp start                     # eb <offset8> for short jump by offset
-                nop                           # 90
+                jmp start                     # e9 <offset_16>
+                #nop                          # eb <offset_8> 90
 
                 .ascii "MSWIN4.1"             #+03 BS_OEMName:     OEM name (use MSWIN4.1 for compatibility)
 BPB_BytsPerSec: .short 512                    #+11 BPB_BytsPerSec: Bytes per sector (possible values are 512, 1024, 2048, and 4096)
@@ -35,10 +36,7 @@ BPB_TotSec32:   .int   0                      #+32 BPB_TotSec32:   Total sector 
                 .int   0                      #+39 BS_VolID:       Volume serial number. (It is usually assigned with timestamp.)
                 .ascii "Dennis Chen"          #+43 BS_VolLab:      Volume label (11 bytes = 8 + 3). It's likely to use "NO NAME    " by default.
                 .ascii "FAT12   "             #+54 BS_FileSysType: File system type: "FAT12   ", "FAT16   ", or "FAT     "
-
-start:          nop                           #+62
-                nop                           #+63
-                                              #+64
+                                              #+62
 .else
                 #
                 #FAT32 specific fields
@@ -56,9 +54,6 @@ BPB_RootClus:   .int   2                      #+44 BPB_RootClus:   Cluster numbe
                 .int   0                      #+67 BS_VolID:       Volume serial number. (It is usually assigned with timestamp.)
                 .ascii "Dennis Chen"          #+71 BS_VolLab:      Volume label (11 bytes = 8 + 3). It's likely to use "NO NAME    " by default.
                 .ascii "FAT12   "             #+82 BS_FileSysType: File system type: "FAT12   ", "FAT16   ", or "FAT     "
-
-start:          nop                           #+90
-                nop                           #+91
-                                              #+92
+                                              #+90
 .endif
 
