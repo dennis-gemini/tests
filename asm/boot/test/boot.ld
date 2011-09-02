@@ -5,8 +5,8 @@ SECTIONS {
 		.begin = .;
 		bpb.o     (.text);
 		boot.o    (.text);
-		print.o   (.text);
-		. = .begin + 508;
-		trailer.o (.text);
+		console.o (.text);
+		. = .begin + 510;
+		bpb.o     (.signature);
 	}
 }

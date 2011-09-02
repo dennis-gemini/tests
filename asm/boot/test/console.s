@@ -12,15 +12,32 @@
 
 .global print
 print:
+	push    %ax
 	lodsb
-	orb   %al, %al
-	jz    1f
-	mov   $0x0e, %ah
-	int   $0x10
-	jmp   print
+	orb     %al, %al
+	jz      1f
+	mov     $0x0e, %ah
+	int     $0x10
+	jmp     print
 1:
+	pop     %ax
 	ret
 
+#############################################
+#
+# print one character
+#
+# input:
+#       %al = ascii
+#
+#############################################
+.global putchar
+putchar:
+	push    %ax
+	mov     $0x0e, %ah
+	int     $0x10
+	pop     %ax
+	ret
 
 #############################################
 #
@@ -34,20 +51,19 @@ step_it:
 	push    %bx
 	push    %cx
 	push    %si
-	mov     $(msg_step), %si
-	mov     $(cur_step), %bx
+	mov     $msg_step, %si
+	mov     $cur_step, %bx
 	movb    (%si), %al
 	mov     $4, %cx
 1:
 	cmpb    %al, (%bx)
 	jz      2f
 	inc     %bx
-	dec     %cx
-	jcxz    3f
-	jmp     1b
+	loopnz  1b
+	jmp     3f
 2:
-	sub     $(cur_step), %bx
-	add     $(next_step), %bx
+	sub     $cur_step, %bx
+	add     $next_step, %bx
 	movb    (%bx), %al
 	movb    %al, (%si)
 	call    print
@@ -58,7 +74,7 @@ step_it:
 	pop     %ax
 	ret
 
-cur_step:    .byte  '\\', '|', '/', '-'
-next_step:   .byte  '|' , '/', '-', '\\'
-msg_step:    .ascii "\\\b\0"
+cur_step:       .ascii "\\|/-"
+next_step:      .ascii "|/-\\"
+msg_step:       .ascii "\\\b\0"
 

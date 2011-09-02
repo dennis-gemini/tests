@@ -1,14 +1,22 @@
-#
-# Reference of FAT12/FAT16/FAT32 formats:
-# 	http://www.microsoft.com/whdc/system/platform/firmware/fatgen.mspx
-#
-
+/*****************************************************************************
+ * Reference of FAT12/FAT16/FAT32 formats:
+ * 	http://www.microsoft.com/whdc/system/platform/firmware/fatgen.mspx
+ *****************************************************************************/
 .code16
 .text
 .extern start
-                #
-                #Common part for FAT12/FAT16/FAT32
-                #
+.global BPB_BytsPerSec
+.global BPB_SecPerClus
+.global BPB_RootEntCnt
+.global BPB_TotSec16
+.global BPB_FATSz16
+.global BPB_SecPerTrk
+.global BPB_NumHeads
+.global BPB_TotSec32
+
+                /***************************************
+                 * Common part for FAT12/FAT16/FAT32
+                 ***************************************/
                 jmp start                     # e9 <offset_16>
                 #nop                          # eb <offset_8> 90
 
@@ -27,9 +35,9 @@ BPB_NumHeads:   .short 2                      #+26 BPB_NumHeads:   Number of hea
 BPB_TotSec32:   .int   0                      #+32 BPB_TotSec32:   Total sector (32-bit) (BPB_TotSec32 >= 0x10000 when BPB_TotSec16 == 0)
 
 .ifndef FAT32
-                #
-                #FAT12/FAT16 specific fields
-                #
+                /***************************************
+                 * FAT12/FAT16 specific fields
+                 ***************************************/
                 .byte  0                      #+36 BS_DrvNum:      Drive number (0x00 for FDD, 0x80 for HDD)
                 .byte  0                      #+37 BS_Reserved1:   Reserved (used by WindowsNT) (= 0)
                 .byte  0x29                   #+38 BS_BootSig:     Boot signature (= 0x29) indicating the following 3 fields are present.
@@ -38,9 +46,9 @@ BPB_TotSec32:   .int   0                      #+32 BPB_TotSec32:   Total sector 
                 .ascii "FAT12   "             #+54 BS_FileSysType: File system type: "FAT12   ", "FAT16   ", or "FAT     "
                                               #+62
 .else
-                #
-                #FAT32 specific fields
-                #
+                /***************************************
+                 * FAT32 specific fields
+                 ***************************************/
 BPB_FATSz32:    .int   0                      #+36 BPB_FATSz32:    Sectors per FAT for FAT32. (BPB_FATSz16 should be 0.)
                 .short 0                      #+40 BPB_ExtFlags:   Extended flags for FAT32.
                 .short 0                      #+42 BPB_FSVer:      Hi-byte: Major version number, lo-byte: Minor version number. 0:0 for ignore.
@@ -50,10 +58,17 @@ BPB_RootClus:   .int   2                      #+44 BPB_RootClus:   Cluster numbe
                 .space 12                     #+52 BPB_Reserved:   Reserved
                 .byte  0                      #+64 BS_DrvNum:      Drive number (0x00 for FDD, 0x80 for HDD)
                 .byte  0                      #+65 BS_Reserved1:   Reserved
-                .byte  0                      #+66 BS_BootSig:     Boot signature (= 0x29) indicating the following 3 fields are present.
+                .byte  0x29                   #+66 BS_BootSig:     Boot signature (= 0x29) indicating the following 3 fields are present.
                 .int   0                      #+67 BS_VolID:       Volume serial number. (It is usually assigned with timestamp.)
                 .ascii "Dennis Chen"          #+71 BS_VolLab:      Volume label (11 bytes = 8 + 3). It's likely to use "NO NAME    " by default.
                 .ascii "FAT12   "             #+82 BS_FileSysType: File system type: "FAT12   ", "FAT16   ", or "FAT     "
                                               #+90
 .endif
+
+/***************************************
+ * signature at the end of boot sector
+ ***************************************/
+.section .signature
+                .byte 0x55
+                .byte 0xaa
 
