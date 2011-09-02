@@ -13,13 +13,16 @@
 .global print
 print:
 	push    %ax
+	push    %si
+1:
 	lodsb
 	orb     %al, %al
-	jz      1f
+	jz      2f
 	mov     $0x0e, %ah
 	int     $0x10
-	jmp     print
-1:
+	jmp     1b
+2:
+	pop     %si
 	pop     %ax
 	ret
 
