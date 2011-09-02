@@ -38,7 +38,7 @@ BPB_TotSec32:   .int   0                      #+32 BPB_TotSec32:   Total sector 
                 /***************************************
                  * FAT12/FAT16 specific fields
                  ***************************************/
-                .byte  0                      #+36 BS_DrvNum:      Drive number (0x00 for FDD, 0x80 for HDD)
+BS_DrvNum:      .byte  0                      #+36 BS_DrvNum:      Drive number (0x00 for FDD, 0x80 for HDD)
                 .byte  0                      #+37 BS_Reserved1:   Reserved (used by WindowsNT) (= 0)
                 .byte  0x29                   #+38 BS_BootSig:     Boot signature (= 0x29) indicating the following 3 fields are present.
                 .int   0                      #+39 BS_VolID:       Volume serial number. (It is usually assigned with timestamp.)
@@ -56,7 +56,7 @@ BPB_RootClus:   .int   2                      #+44 BPB_RootClus:   Cluster numbe
                 .short 1                      #+48 BPB_FSInfo:     Sector number of FSINFO structure
                 .short 6                      #+50 BPB_BkBootSec:  Sector number of backup boot record
                 .space 12                     #+52 BPB_Reserved:   Reserved
-                .byte  0                      #+64 BS_DrvNum:      Drive number (0x00 for FDD, 0x80 for HDD)
+BS_DrvNum:      .byte  0                      #+64 BS_DrvNum:      Drive number (0x00 for FDD, 0x80 for HDD)
                 .byte  0                      #+65 BS_Reserved1:   Reserved
                 .byte  0x29                   #+66 BS_BootSig:     Boot signature (= 0x29) indicating the following 3 fields are present.
                 .int   0                      #+67 BS_VolID:       Volume serial number. (It is usually assigned with timestamp.)

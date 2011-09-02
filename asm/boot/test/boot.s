@@ -1,7 +1,9 @@
 .code16
 .text
 
-.set root_dir_base, 0x0200	#ajacent to 0x7c00:0x01ff
+.set STACK_SEGMENT, 0x0000
+.set STACK_BASE   , 0xffff
+.set ROOT_DIR_BASE, 0x0200	#ajacent to 0x7c00:0x01ff
 
 #############################################
 # main procedure
@@ -16,9 +18,9 @@ start:
 	mov     %ax, %ds
 	mov     %ax, %es
 
-	xor     %ax, %ax
+	mov     $STACK_SEGMENT, %ax
 	mov     %ax, %ss
-	mov     $0xffff, %sp
+	mov     $STACK_BASE, %sp
 	sti
 
 	call    load_root_dir
@@ -32,10 +34,10 @@ start:
 #############################################
 
 load_root_dir:
-	mov     $(msg_loading), %si
+	mov     $msg_loading, %si
 	call    print
 
-	mov     $(root_dir_base), %bx
+	mov     $ROOT_DIR_BASE, %bx
 	#call   load_root_sector
 
 	ret
