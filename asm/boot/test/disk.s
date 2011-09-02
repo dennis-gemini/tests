@@ -25,16 +25,16 @@ read_sectors:
 	push    %cx
 
 	xor     %dx, %dx
-	divw    ($BPB_SecPerTrk)
+	divw    (BPB_SecPerTrk)
 	inc     %dl                  
 	mov     %dl, %cl             # cl = sector
 
 	xor     %dx, %dx
-	divw    ($BPB_NumHeads)
+	divw    (BPB_NumHeads)
 	mov     %al, %ch             # ch = cylinder(track)
 	mov     %dl, %dh             # dh = head
 
-	movb    ($BPB_DrvNum), dl    # dl = drive
+	movb    (BS_DrvNum), %dl    # dl = drive
 
 	pop     %ax
 	mov     $0x02, %ah           #INPUT  al: number of sectors, ch: track, cl: sector, dh: head, dl: drive, es:bx: buffer

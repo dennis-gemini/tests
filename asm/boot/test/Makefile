@@ -2,6 +2,7 @@ TARGET = boot.img
 
 SRCS   = bpb.s \
          boot.s \
+	 disk.s \
          console.s
 
 OBJS   = $(SRCS:.s=.o)
@@ -30,8 +31,9 @@ clean:
 
 bpb.o: bpb.s
 boot.o: boot.s
+disk.o: disk.s
 console.o: console.s
-boot.elf: bpb.o boot.o console.o
+boot.elf: bpb.o boot.o disk.o console.o
 boot.bin: boot.elf
 boot.img: boot.bin
 

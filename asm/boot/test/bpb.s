@@ -13,6 +13,7 @@
 .global BPB_SecPerTrk
 .global BPB_NumHeads
 .global BPB_TotSec32
+.global BS_DrvNum
 
                 /***************************************
                  * Common part for FAT12/FAT16/FAT32
