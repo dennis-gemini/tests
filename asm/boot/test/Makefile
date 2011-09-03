@@ -3,7 +3,8 @@ TARGET = boot.img
 SRCS   = bpb.s \
          boot.s \
 	 disk.s \
-         console.s
+         console.s \
+	 loader.s
 
 OBJS   = $(SRCS:.s=.o)
 
@@ -20,8 +21,9 @@ all:	$(TARGET)
 	objcopy -j .text -O binary $^ $@
 
 %.img:
-	dd if=$^ of=$@ bs=512 count=1
+	dd if=$< of=$@ bs=512 count=1
 	dd if=/dev/zero of=$@ skip=1 seek=1 bs=512 count=$$((2880 - 1))
+	mcopy -i $@ $^ ::/
 
 .PHONY: clean
 clean:
@@ -35,5 +37,8 @@ disk.o: disk.s
 console.o: console.s
 boot.elf: bpb.o boot.o disk.o console.o
 boot.bin: boot.elf
-boot.img: boot.bin
+loader.o: loader.s
+loader.elf: loader.o console.o
+loader.bin: loader.elf
+boot.img: boot.bin loader.bin
 

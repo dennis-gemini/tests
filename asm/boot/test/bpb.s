@@ -7,12 +7,12 @@
 .extern start
 .global BPB_BytsPerSec
 .global BPB_SecPerClus
+.global BPB_RsvdSecCnt
+.global BPB_NumFATs
 .global BPB_RootEntCnt
-.global BPB_TotSec16
 .global BPB_FATSz16
 .global BPB_SecPerTrk
 .global BPB_NumHeads
-.global BPB_TotSec32
 .global BS_DrvNum
 
                 /***************************************
@@ -24,16 +24,16 @@
                 .ascii "MSWIN4.1"             #+03 BS_OEMName:     OEM name (use MSWIN4.1 for compatibility)
 BPB_BytsPerSec: .short 512                    #+11 BPB_BytsPerSec: Bytes per sector (possible values are 512, 1024, 2048, and 4096)
 BPB_SecPerClus: .byte  1                      #+13 BPB_SecPerClus: Sectors per cluster (n^2: 1, 2, 4, 8, 16, 32, 64, and 128)
-                .short 1                      #+14 BPB_RsvdSecCnt: Reserved sector count (1 for FAT12/FAT16, 32 for FAT32)
-                .byte  2                      #+16 BPB_NumFATs:    Number of FATs
+BPB_RsvdSecCnt: .short 1                      #+14 BPB_RsvdSecCnt: Reserved sector count (1 for FAT12/FAT16, 32 for FAT32)
+BPB_NumFATs:    .byte  2                      #+16 BPB_NumFATs:    Number of FATs
 BPB_RootEntCnt: .short 224                    #+17 BPB_RootEntCnt: Root entry count (512 for FAT16, 0 for FAT32)
-BPB_TotSec16:   .short 2880                   #+19 BPB_TotSec16:   Total sector (16-bit). For FAT12/FAT16, BPB_TotSec16 != 0 && BPB_TotSec32 == 0. For FAT32, BPB_TotSec16 == 0 && BPB_TotSec32 != 0
+                .short 2880                   #+19 BPB_TotSec16:   Total sector (16-bit). For FAT12/FAT16, BPB_TotSec16 != 0 && BPB_TotSec32 == 0. For FAT32, BPB_TotSec16 == 0 && BPB_TotSec32 != 0
                 .byte  0xf0                   #+21 BPB_Media:      0xf0 for removal media, 0xf8 for fixed media (available values: 0xf0 - 0xff)
 BPB_FATSz16:    .short 9                      #+22 BPB_FATSz16:    Sectors per FAT (16-bit) for FAT12/FAT16. 0 for FAT32.
 BPB_SecPerTrk:  .short 18                     #+24 BPB_SecPerTrk:  Sectors per track
 BPB_NumHeads:   .short 2                      #+26 BPB_NumHeads:   Number of heads (2 for 1.44 MB 3.5-inch floppy)
                 .int   0                      #+28 BPB_HiddSec:    Hidden sectors (0 for non-partitioned media)
-BPB_TotSec32:   .int   0                      #+32 BPB_TotSec32:   Total sector (32-bit) (BPB_TotSec32 >= 0x10000 when BPB_TotSec16 == 0)
+                .int   0                      #+32 BPB_TotSec32:   Total sector (32-bit) (BPB_TotSec32 >= 0x10000 when BPB_TotSec16 == 0)
 
 .ifndef FAT32
                 /***************************************
@@ -66,9 +66,9 @@ BS_DrvNum:      .byte  0                      #+64 BS_DrvNum:      Drive number 
                                               #+90
 .endif
 
-/***************************************
- * signature at the end of boot sector
- ***************************************/
+		/***************************************
+		* signature at the end of boot sector
+		***************************************/
 .section .signature
                 .byte 0x55
                 .byte 0xaa
