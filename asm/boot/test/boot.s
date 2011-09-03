@@ -213,11 +213,11 @@ launch_loader:
 	 *   0xFF8-0xFFF  0xFFF8-0xFFFF  0x0FFFFFF8-0x0FFFFFFF  Last cluster in file (EOC)
 	 */
 
-	push    %ax
-	push    %bx
-	push    %cx
-	push    %es
-	push    %si
+#	push    %ax
+#	push    %bx
+#	push    %cx
+#	push    %es
+#	push    %si
 
 	mov     $LOADER_SEG, %bx
 	mov     %bx, %es
@@ -234,17 +234,24 @@ _load_cluster:
 	call    print
 
 	push    %ax
+	sub     $2, %ax
 	mul     %cx
+
+#FIXME:
+	add     (BPB_RsvdSecCnt), %ax
+	add     (BPB_FATSz16), %ax
+	add     (BPB_FATSz16), %ax
+	add     (BPB_RootEntCnt), %ax
+
 	call    read_sectors
 	add     %cx, %bx
 	pop     %ax
 
-	sub     $2, %ax
 	mov     %ax, %si
 	shl     $1, %si
 	add     %ax, %si
-	shr     $1, %si			# %si = (Cluster_Number - 2) * 3 / 2
-	and     $1, %ax			# %ax = (Cluster_Number - 2) * 3 % 2 = (Cluster_Number - 2) % 2
+	shr     $1, %si			# %si = Cluster_Number * 3 / 2
+	and     $1, %ax			# %ax = Cluster_Number * 3 % 2 = (Cluster_Number - 2) % 2
 	add     $FAT_OFF, %si
 	mov     (%si), %ax
 	jz      _even_offset
@@ -255,10 +262,10 @@ _even_offset:
 	and     $0x0fff, %ax
 	jmp     _load_cluster
 _finish:
-	pop     %si
-	pop     %es
-	pop     %cx
-	pop     %bx
-	pop     %ax
+#	pop     %si
+#	pop     %es
+#	pop     %cx
+#	pop     %bx
+#	pop     %ax
 	ret
 
