@@ -11,10 +11,10 @@ all:	$(TARGET)
 
 .SUFFIXES: .s
 .s.o:
-	$(AS) $^ -o $@
+	$(AS) -g $^ -o $@
 
 %.elf:
-	$(LD) -o $@ -T $(@:.elf=.ld)
+	$(LD) -g -o $@ -T $(@:.elf=.ld)
 
 %.bin:
 	objcopy -j .text -O binary $^ $@
