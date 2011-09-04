@@ -4,7 +4,7 @@ SRCS   = bpb.s \
          boot.s \
 	 disk.s \
          console.s \
-	 loader.s
+	 kernel.s
 
 OBJS   = $(SRCS:.s=.o)
 
@@ -15,7 +15,7 @@ all:	$(TARGET)
 	$(AS) -g $^ -o $@
 
 %.elf:
-	$(LD) -g -o $@ -T $(@:.elf=.ld)
+	$(LD) -g -o $@ -T $(@:.elf=.ld) $^
 
 %.bin:
 	objcopy -j .text -O binary $^ $@
@@ -37,8 +37,8 @@ disk.o: disk.s
 console.o: console.s
 boot.elf: bpb.o boot.o disk.o console.o
 boot.bin: boot.elf
-loader.o: loader.s
-loader.elf: loader.o console.o
-loader.bin: loader.elf
-boot.img: boot.bin loader.bin
+kernel.o: kernel.s
+kernel.elf: kernel.o console.o
+kernel.bin: kernel.elf
+boot.img: boot.bin kernel.bin
 

@@ -121,6 +121,11 @@ print_dec:
 	add     $'0', %al
 	call    putchar
 
+	mov     $'\r', %al
+	call    putchar
+	mov     $'\n', %al
+	call    putchar
+
 	pop     %dx
 	pop     %cx
 	pop     %bx

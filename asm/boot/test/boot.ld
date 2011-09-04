@@ -3,11 +3,10 @@ SECTIONS {
 
 	.text : {
 		.begin = .;
-		bpb.o     (.text);
-		boot.o    (.text);
-		disk.o    (.text);
-		console.o (.text);
+		bpb.o  (.text);
+		boot.o (.text);
+		*      (.text);
 		. = .begin + 510;
-		bpb.o     (.signature);
+		bpb.o  (.signature);
 	}
 }

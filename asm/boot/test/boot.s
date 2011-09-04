@@ -4,8 +4,8 @@
 .set STACK_SEG , 0x07e0
 .set STACK_OFF , 0x00ff
 .set FAT_OFF   , 0x7f00
-.set LOADER_SEG, 0x9000
-.set LOADER_OFF, 0x0100
+.set LOADER_SEG, 0x0050
+.set LOADER_OFF, 0x0000
 
 #############################################
 # main procedure
@@ -24,7 +24,12 @@ start:
 
 	call    load_fat_and_root
 	call    get_loader_cluster
-	jmp     launch_loader
+	cmp     $0xffff, %ax
+	jnz     launch_loader
+
+	mov     $'@', %al
+	call    putchar
+	int     $0x19
 
 #############################################
 # load root directory
@@ -53,8 +58,6 @@ load_fat_and_root:
 	add     %ax, %bx
 	mov     %bx, (root_dir_base)
 	call    print_dec
-	mov     $msg_loaded, %si
-	call    print
 
 	/********************************************
 	 * Load root directory
@@ -86,8 +89,6 @@ load_fat_and_root:
 	movw    (BPB_BytsPerSec), %ax
 	mul     %cx
 	call    print_dec
-	mov     $msg_loaded, %si
-	call    print
 
 	pop     %si
 	pop     %dx
@@ -96,9 +97,8 @@ load_fat_and_root:
 	pop     %ax
 	ret
 
-msg_fat:           .ascii "FAT: \0"
-msg_root_dir:      .ascii "ROOT: \0"
-msg_loaded:        .ascii " B"
+msg_fat:           .ascii "FAT:\0"
+msg_root_dir:      .ascii "ROOT:\0"
 msg_crlf:          .ascii "\r\n\0"
 root_dir_base:     .short 0
 data_sector_start: .short 0
@@ -167,7 +167,7 @@ _check_short_file_name:
 
 	mov     $11, %cx
 	mov     %bx, %si
-	mov     $str_loader, %di
+	mov     $str_kernel, %di
         repz    cmpsb
 	pop     %cx
 	jnz     _next_entry
@@ -185,7 +185,7 @@ _leave_scan_entry:
 	pop     %bx
 	ret
 
-str_loader:    .ascii "LOADER  BIN\0"
+str_kernel:    .ascii "KERNEL  BIN\0"
 
 #############################################
 #
