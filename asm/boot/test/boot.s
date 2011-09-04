@@ -5,17 +5,13 @@
 .set STACK_OFF , 0x00ff
 .set FAT_OFF   , 0x7f00
 .set LOADER_SEG, 0x9000
-.set LOADER_OFF, 0x100
+.set LOADER_OFF, 0x0100
 
 #############################################
 # main procedure
 #############################################
 .global start
 start:
-	/************************************
-	 * Initialize segment and registers
-	 ************************************/
-	cli
 	xor     %ax, %ax
 	mov     %ax, %ds
 	mov     %ax, %es
@@ -25,12 +21,10 @@ start:
 	mov     $STACK_OFF, %sp
 
 	movb    %dl, (BS_DrvNum)
-	sti
 
 	call    load_fat_and_root
 	call    get_loader_cluster
-	call    launch_loader
-	jmp     .
+	jmp     launch_loader
 
 #############################################
 # load root directory
@@ -76,12 +70,14 @@ load_fat_and_root:
 	xor     %dx, %dx
 	divw    (BPB_BytsPerSec)
 	mov     %ax, %cx                      # cx = ((32 * BPB_RootEntCnt) + (BPB_BytsPerSec - 1)) / BPB_BytsPerSec
+	mov     %ax, (data_sector_start)
 
 	#calculate first sector number of root directory
 	xor     %ax, %ax
 	movb    (BPB_NumFATs), %al
 	mulw    (BPB_FATSz16)
 	add     (BPB_RsvdSecCnt), %ax         # ax = (BPB_NumFATs * BPB_FATSz16 + BPB_RsvdSecCnt)
+	add     %ax, (data_sector_start)
 
 	#load root directory to the address specified by root_dir_base
 	call    read_sectors
@@ -100,11 +96,12 @@ load_fat_and_root:
 	pop     %ax
 	ret
 
-msg_fat:       .ascii "FAT: \0"
-msg_root_dir:  .ascii "ROOT: \0"
-msg_loaded:    .ascii " bytes"
-msg_crlf:      .ascii "\r\n\0"
-root_dir_base: .short 0
+msg_fat:           .ascii "FAT: \0"
+msg_root_dir:      .ascii "ROOT: \0"
+msg_loaded:        .ascii " B"
+msg_crlf:          .ascii "\r\n\0"
+root_dir_base:     .short 0
+data_sector_start: .short 0
 
 #############################################
 #
@@ -213,12 +210,6 @@ launch_loader:
 	 *   0xFF8-0xFFF  0xFFF8-0xFFFF  0x0FFFFFF8-0x0FFFFFFF  Last cluster in file (EOC)
 	 */
 
-#	push    %ax
-#	push    %bx
-#	push    %cx
-#	push    %es
-#	push    %si
-
 	mov     $LOADER_SEG, %bx
 	mov     %bx, %es
 	mov     $LOADER_OFF, %bx
@@ -228,32 +219,30 @@ launch_loader:
 _load_cluster:
 	cmp     $0x0002, %ax
 	jb      _finish
-
-	call    print_dec
-	mov     $msg_crlf, %si
-	call    print
+	cmp     $0x0fef, %ax
+	ja      _finish
 
 	push    %ax
 	sub     $2, %ax
 	mul     %cx
 
-#FIXME:
-	add     (BPB_RsvdSecCnt), %ax
-	add     (BPB_FATSz16), %ax
-	add     (BPB_FATSz16), %ax
-	add     (BPB_RootEntCnt), %ax
+	add     (data_sector_start), %ax
 
 	call    read_sectors
-	add     %cx, %bx
-	pop     %ax
+	mov     %cx, %ax
+	mulw    (BPB_BytsPerSec)
+	add     %ax, %bx
+	pop     %dx                     # cluster number (%ax)
 
-	mov     %ax, %si
+	mov     %dx, %si
 	shl     $1, %si
-	add     %ax, %si
+	add     %dx, %si
 	shr     $1, %si			# %si = Cluster_Number * 3 / 2
-	and     $1, %ax			# %ax = Cluster_Number * 3 % 2 = (Cluster_Number - 2) % 2
+	and     $1, %dx			# %ax = Cluster_Number * 3 % 2 = Cluster_Number % 2
+
 	add     $FAT_OFF, %si
 	mov     (%si), %ax
+	or      %dx, %dx
 	jz      _even_offset
 _odd_offset:
 	shr     $4, %ax
@@ -262,10 +251,5 @@ _even_offset:
 	and     $0x0fff, %ax
 	jmp     _load_cluster
 _finish:
-#	pop     %si
-#	pop     %es
-#	pop     %cx
-#	pop     %bx
-#	pop     %ax
-	ret
+	ljmp    $LOADER_SEG, $LOADER_OFF
 
