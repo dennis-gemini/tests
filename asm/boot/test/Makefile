@@ -23,7 +23,7 @@ all:	$(TARGET)
 %.img:
 	dd if=$< of=$@ bs=512 count=1
 	dd if=/dev/zero of=$@ skip=1 seek=1 bs=512 count=$$((2880 - 1))
-	mcopy -i $@ $^ ::/
+	mcopy -i $@ $(wordlist 2, $(words $^), $^) ::/
 
 .PHONY: clean
 clean:
