@@ -10,10 +10,10 @@ start:
 	mov      $0xb800, %ax
 	mov      %ax, %es
 	xor      %di, %di
-	mov      $(80 * 12), %cx
+	mov      $(80 * 25), %cx
 
 	mov      $0x0F, %ah
-	mov      $'A', %al
+	mov      $'.', %al
 
 	cld
 	rep      stosw
