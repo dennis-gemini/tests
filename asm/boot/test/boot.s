@@ -12,7 +12,7 @@
 #############################################
 .global start
 start:
-	xor     %ax, %ax
+	mov     %cs, %ax
 	mov     %ax, %ds
 	mov     %ax, %es
 
@@ -29,7 +29,7 @@ start:
 
 	mov     $'@', %al
 	call    putchar
-	int     $0x19
+	int     $0x18
 
 #############################################
 # load root directory
