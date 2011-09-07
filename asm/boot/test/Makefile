@@ -1,12 +1,17 @@
-TARGET = boot.img
+TARGET         = boot.img
 
-SRCS   = bpb.s \
-         boot.s \
-	 disk.s \
-         console.s \
-	 kernel.s
+SRCS           = bpb.s     \
+                 boot.s    \
+                 disk.s    \
+                 console.s \
+                 kernel.s
 
-OBJS   = $(SRCS:.s=.o)
+OBJS           = $(SRCS:.s=.o)
+
+CROSS_COMPILE ?=
+AS             = $(CROSS_COMPILE)as
+LD             = $(CROSS_COMPILE)ld
+OBJCOPY        = $(CROSS_COMPILE)objcopy
 
 all:	$(TARGET)
 
@@ -18,7 +23,7 @@ all:	$(TARGET)
 	$(LD) -g -o $@ -T $(@:.elf=.ld) $^
 
 %.bin:
-	objcopy -j .text -O binary $^ $@
+	$(OBJCOPY) -j .text -O binary $^ $@
 
 %.img:
 	dd if=$< of=$@ bs=512 count=1
