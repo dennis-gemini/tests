@@ -167,7 +167,7 @@ protected:
                         printf("Worker[%d]: %d\n", num, cur);
                         idle();
                 }
-                printf("Worker[%d]: exited.\n");
+                printf("Worker[%d]: exited.\n", num);
         }
 
         virtual void
