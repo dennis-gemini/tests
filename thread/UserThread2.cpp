@@ -49,7 +49,7 @@ public:
                 }
 
                 if(current) {
-                        LOG("switching to %s", current->getName());
+                        LOG("switching to %s...\n", current->getName());
 
 			alarm(current->timeout);
                         if(setcontext(&current->context) == -1) {
@@ -117,7 +117,7 @@ private:
 	{
 		LOG("Force switching context...\n");
 
-		if(setcontext(&scheduler) == -1) {
+		if(swapcontext(&current->context, &scheduler) == -1) {
 			ERROR("setcontext");
 		}
 	}
@@ -210,7 +210,7 @@ protected:
         virtual void
         run()
         {
-                for(cur = 0; cur < 10000; cur++) {
+                for(cur = 0; cur < 800000; cur++) {
                         LOG("Worker[%d]: %d\n", num, cur);
 //                      idle();
                 }
