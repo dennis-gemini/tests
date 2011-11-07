@@ -4,9 +4,31 @@
 #include <errno.h>
 #include <error.h>
 #include <string.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <stdarg.h>
 
 #define DEFAULT_STACK_SIZE      (10 * 1024)
+#define DEFAULT_TIMEOUT		(1)
 #define ERROR(msg...)           error_at_line(-1, errno, __FILE__, __LINE__, ##msg)
+
+inline void
+LOG(const char* fmt, ...)
+{
+	va_list        args;
+	char           buf[1024];
+	struct timeval tv;
+
+	va_start(args, fmt);
+	gettimeofday(&tv, NULL);
+	int len = snprintf(buf, sizeof(buf), "[%ld.%ld] ", (long) tv.tv_sec, (long) tv.tv_usec);
+	vsnprintf(buf + len, sizeof(buf) - len, fmt, args);
+	va_end(args);
+
+	printf("%s", buf);
+}
 
 class UserThread
 {
@@ -14,9 +36,11 @@ public:
         static void
         schedule()
         {
-                if(getcontext(&scheduler) == -1) {
-                        ERROR("getcontext");
-                }
+		signal(SIGALRM, onTimedOut);
+
+		if(getcontext(&scheduler) == -1) {
+			ERROR("getcontext");
+		}
 
                 if(current == NULL) {
                         current = head;
@@ -25,19 +49,20 @@ public:
                 }
 
                 if(current) {
-                        printf("switching to %s\n", current->getName());
+                        LOG("switching to %s", current->getName());
 
+			alarm(current->timeout);
                         if(setcontext(&current->context) == -1) {
                                 ERROR("setcontext");
                         }
                 } else {
-                        printf("no current thread, exiting scheduler loop...\n");
+                        LOG("no current thread, exiting scheduler loop...\n");
                 }
         }
 
 protected:
-        UserThread(size_t stackSize = DEFAULT_STACK_SIZE):
-                prev(NULL), next(NULL)
+        UserThread(unsigned int timeout = DEFAULT_TIMEOUT, size_t stackSize = DEFAULT_STACK_SIZE):
+                prev(NULL), next(NULL), timeout(timeout)
         {
                 stackBase = (unsigned char*) calloc(stackSize, 1);
 
@@ -68,9 +93,11 @@ protected:
         void
         idle()
         {
+		alarm(0);
                 if(swapcontext(&context, &scheduler) == -1) {
                         ERROR("swapcontext");
                 }
+		alarm(timeout);
         }
 
 private:
@@ -78,10 +105,22 @@ private:
         threadRoutine(UserThread* self)
         {
                 if(self) {
+			alarm(self->timeout);
                         self->run();
+			alarm(0);
                         self->unlink();
                 }
         }
+
+	static void
+	onTimedOut(int arg)
+	{
+		LOG("Force switching context...\n");
+
+		if(setcontext(&scheduler) == -1) {
+			ERROR("setcontext");
+		}
+	}
 
         void
         link()
@@ -131,17 +170,20 @@ private:
         static UserThread* head;
         static UserThread* current;
         static ucontext_t  scheduler;
+	static jmp_buf     interrupt;
 
         UserThread*        prev;
         UserThread*        next;
         ucontext_t         context;
         size_t             stackSize;
         unsigned char*     stackBase;
+	unsigned int       timeout;
 };
 
 UserThread* UserThread::head    = NULL;
 UserThread* UserThread::current = NULL;
 ucontext_t  UserThread::scheduler;
+jmp_buf     UserThread::interrupt;
 
 ///////////////////////////////////////////////////////////////////
 
@@ -168,11 +210,11 @@ protected:
         virtual void
         run()
         {
-                for(cur = 0; cur < 5; cur++) {
-                        printf("Worker[%d]: %d\n", num, cur);
-                        idle();
+                for(cur = 0; cur < 10000; cur++) {
+                        LOG("Worker[%d]: %d\n", num, cur);
+//                      idle();
                 }
-                printf("Worker[%d]: exited.\n", num);
+                LOG("Worker[%d]: exited.\n", num);
         }
 
         virtual const char*

@@ -1,5 +1,5 @@
-TARGETS  = UserThread
-SRCS     = UserThread.cpp
+TARGETS  = UserThread UserThread2
+SRCS     = UserThread.cpp UserThread2.cpp
 OBJS     = $(SRCS:.cpp=.o)
 
 CXXFLAGS = -g
@@ -21,3 +21,5 @@ clean:
 UserThread.o: UserThread.cpp
 UserThread: UserThread.o
 
+UserThread2.o: UserThread2.cpp
+UserThread2: UserThread2.o
