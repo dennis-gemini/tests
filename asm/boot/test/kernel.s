@@ -44,8 +44,8 @@
 	.byte ((\base ) >> 24) & 0xff
 .endm
 
-.code16
 .text
+.code16
 start:
 	mov      %cs, %ax
 	mov      %ax, %ds
@@ -75,13 +75,9 @@ start:
 	addl     $gdt_begin, %eax
 	mov      %eax, gdt_base
 
-	mov      $gdt_end, %ax
-	sub      $gdt_begin, %ax
-	mov      %ax, gdt_len
-
 	cli
-	lidtl    idt_desc
-	lgdtl    gdt_desc
+	lidtw    idt_desc
+	lgdtw    gdt_desc
 
 	#########################################
 	# Enter protected mode
@@ -97,25 +93,26 @@ start:
 
 	#########################################
 	# Align segment registers
-	movw     $0x10, %ax
-	movw     %ax, %ds
-	movw     %ax, %es
-	movw     %ax, %fs
-	movw     %ax, %gs
-	movw     %ax, %ss
-
 	ljmpl    $0x08, $start32
 	#########################################
 
 .code32
-.balign 4
 start32:
-	movl     $((80 * 10 + 0) * 2), %edi
-	addl     0xb8000, %edi
-	movb     $0x0c, %ah
+	mov      $0x10, %ax
+	mov      %ax, %ds
+	mov      %ax, %es
+	mov      %ax, %fs
+	mov      %ax, %gs
+	mov      %ax, %ss
+
 	movb     $'A', %al
-	movw     %ax, (%edi)
-	jmp      .
+	movb     $0x0C, %ah
+	movl     $0xb8000, %ebx
+	movw     %ax, %es: (%ebx)
+
+1:
+	nop
+	jmp      1b
 
 .code16
 msg_loader_started: .ascii "Hello, Real Mode!\r\n\0"
@@ -124,15 +121,16 @@ top_of_stack:
 
 .balign 4
 
-gdt_desc:
-gdt_len: .word 0
-gdt_base:.long 0
 gdt_begin:
-	GDT_ENTRY 0x00000000, 0x00000000, 0x00, 0x00	#0x00 dummy segment
-	GDT_ENTRY 0x00000000, 0x000fffff, 0x9b, 0xc0	#0x08 code segment
-	GDT_ENTRY 0x00000000, 0x000fffff, 0x93, 0xc0	#0x10 data segment
-	GDT_ENTRY 0x000b8000, 0x0000ffff, 0x93, 0x40	#0x18 video segment
+	GDT_ENTRY 0x00000000, 0x00000, 0x00, 0x00	#0x00 dummy segment
+	GDT_ENTRY 0x00000000, 0xfffff, 0x9b, 0xc0	#0x08 code segment
+	GDT_ENTRY 0x00000000, 0xfffff, 0x93, 0xc0	#0x10 data segment
+	GDT_ENTRY 0x000B8000, 0x0ffff, 0x93, 0xc0	#0x10 data segment
 gdt_end:
+
+gdt_desc:
+gdt_len: .word (gdt_end - gdt_begin - 1)
+gdt_base:.long 0
 
 .balign 4
 idt_desc:
