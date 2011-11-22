@@ -10,8 +10,15 @@
 #include <sys/time.h>
 #include <stdarg.h>
 
+#define HAVE_SETITIMER          (1)
+
+#if HAVE_SETITIMER
+#define DEFAULT_TIMEOUT		(100)	//milliseconds
+#else
+#define DEFAULT_TIMEOUT		(1)	//seconds
+#endif
+
 #define DEFAULT_STACK_SIZE      (10 * 1024)
-#define DEFAULT_TIMEOUT		(1)
 #define ERROR(msg...)           error_at_line(-1, errno, __FILE__, __LINE__, ##msg)
 
 inline void
@@ -51,7 +58,8 @@ public:
                 if(current) {
                         LOG("switching to %s...\n", current->getName());
 
-			alarm(current->timeout);
+			setTimeout(current->timeout);
+
                         if(setcontext(&current->context) == -1) {
                                 ERROR("setcontext");
                         }
@@ -93,21 +101,35 @@ protected:
         void
         idle()
         {
-		alarm(0);
+		setTimeout(0);
                 if(swapcontext(&context, &scheduler) == -1) {
                         ERROR("swapcontext");
                 }
-		alarm(timeout);
+		setTimeout(timeout);
         }
+
+	static void
+	setTimeout(unsigned int millis)
+	{
+#if HAVE_SETITIMER
+		struct itimerval t;
+		memset(&t, 0, sizeof(t));
+		t.it_value.tv_usec = millis * 1000;	//in microseconds
+
+		setitimer(ITIMER_REAL, &t, NULL);	
+#else
+		alarm(current->timeout);
+#endif
+	}
 
 private:
         static void
         threadRoutine(UserThread* self)
         {
                 if(self) {
-			alarm(self->timeout);
+			setTimeout(self->timeout);
                         self->run();
-			alarm(0);
+			setTimeout(0);
                         self->unlink();
                 }
         }
