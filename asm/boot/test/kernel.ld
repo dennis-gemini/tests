@@ -1,5 +1,5 @@
 SECTIONS {
-	. = 0x0000;
+	. = 0x0500;
 
 	.text : {
 		kernel.o (.text)

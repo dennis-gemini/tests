@@ -46,7 +46,7 @@
 
 .text
 .code16
-start:
+start16:
 	mov      %cs, %ax
 	mov      %ax, %ds
 	mov      %ax, %es
@@ -67,15 +67,36 @@ start:
 #	mov      $0x2401, %ax
 #	int      $0x15
 
+	# Alternative way to turn on A20
+#1:	inb      $0x64, %al
+#	testb    $0x02, %al
+#	jnz      1b
+#
+#	movb     $0xd1, %al
+#	outb     %al, $0x64
+#
+#2:	inb      $0x64, %al
+#	testb    $0x02, %al
+#	jnz      2b
+#
+#	movb     $0xdf, %al
+#	outb     %al, $0x60
+
 	#########################################
 	# Load GDT and IDT
-	xor      %eax, %eax
-	mov      %ds, %ax
-	shl      $4, %eax
-	addl     $gdt_begin, %eax
-	mov      %eax, gdt_base
+#	xor      %eax, %eax
+#	mov      %ds, %ax
+#	shl      $4, %eax
+#	addl     $gdt_begin, %eax
+#	mov      %eax, gdt_base
+
+	xorw     %ax, %ax
+	movw     %ax, %ds
+	movw     %ax, %es
+	movw     %ax, %ss
 
 	cli
+	cld
 	lidtw    idt_desc
 	lgdtw    gdt_desc
 
@@ -105,10 +126,16 @@ start32:
 	mov      %ax, %gs
 	mov      %ax, %ss
 
-	movb     $'A', %al
+	movb     $'*', %al
 	movb     $0x0C, %ah
-	movl     $0xb8000, %ebx
-	movw     %ax, %es: (%ebx)
+#	movl     $0xb8000, %ebx
+#	movw     %ax, %es: (%ebx)
+
+	movl     $(80 * 25), %ecx
+	movl     $0xb8000, %edi
+	cld
+	repnz
+	stosw
 
 1:
 	nop
@@ -120,17 +147,15 @@ stack: .space 1024
 top_of_stack:
 
 .balign 4
-
 gdt_begin:
 	GDT_ENTRY 0x00000000, 0x00000, 0x00, 0x00	#0x00 dummy segment
-	GDT_ENTRY 0x00000000, 0xfffff, 0x9b, 0xc0	#0x08 code segment
-	GDT_ENTRY 0x00000000, 0xfffff, 0x93, 0xc0	#0x10 data segment
-	GDT_ENTRY 0x000B8000, 0x0ffff, 0x93, 0xc0	#0x10 data segment
+	GDT_ENTRY 0x00000000, 0xfffff, 0x9a, 0xc0	#0x08 code segment
+	GDT_ENTRY 0x00000000, 0xfffff, 0x92, 0xc0	#0x10 data segment
 gdt_end:
 
 gdt_desc:
 gdt_len: .word (gdt_end - gdt_begin - 1)
-gdt_base:.long 0
+gdt_base:.long gdt_begin
 
 .balign 4
 idt_desc:

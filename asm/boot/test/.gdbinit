@@ -1,2 +1,2 @@
-target remote | exec qemu -gdb stdio -fda boot.img
+target remote | exec qemu -no-kvm -gdb stdio -fda boot.img
 symbol-file boot.elf kernel.elf
