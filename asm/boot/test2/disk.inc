@@ -1,9 +1,11 @@
 #
 # disk.inc
 #
-#
+#	Manipulate file access to hard disk and floppy disk
 #
 
+# 
+# ATA PIO
 #
 # See reference at: http://wiki.osdev.org/ATA_PIO_Mode
 #
@@ -63,6 +65,46 @@
 .set ATA_CMD_READSECTOR,       0x20
 .set ATA_CMD_WRITESECTOR,      0x30
 
+#############################################################################
+
+#
+# Floppy PIO
+#
+# See reference at: http://wiki.osdev.org/Floppy_Disk_Controller
+#
+
+.set FDC_BUS_PRIMARY,          0x3f0
+.set FDC_BUS_SECONDARY,        0x370
+
+.set FDC_PORT_STATUS_A,        0x0	# status register a (read-only)
+.set FDC_PORT_STATUS_B,        0x1	# status register b (read-only)
+.set FDC_PORT_DOR,             0x2	# digital output register, which controls floppy drive motors, floppy drive selection, and resets.
+.set FDC_PORT_TDR,             0x3	# tape drive register
+.set FDC_PORT_MSR,             0x4	# main status register (read-only), which should be checked before each reading/writing with FIFO.
+.set FDC_PORT_DSR,             0x4	# data-rate select register (write-only)
+.set FDC_PORT_DATA_FIFO,       0x5	# data fifo
+.set FDC_PORT_DIR,             0x7	# digital input register (read-only)
+.set FDC_PORT_CCR,             0x7	# configuration control register (write-only)
+
+.set FDC_MASK_DOR_DSEL,        0x03	# select drive number for next access
+.set FDC_MASK_DOR_RESET,       0x04     # 0: enter reset mode, 1: normal operation
+.set FDC_MASK_DOR_IRQ,         0x08     # 1: enable IRQ and DMA
+.set FDC_MASK_DOR_MOTA,        0x10     # 1: turn on drive 0's motor
+.set FDC_MASK_DOR_MOTB,        0x20     # 1: turn on drive 1's motor
+.set FDC_MASK_DOR_MOTC,        0x40     # 1: turn on drive 2's motor
+.set FDC_MASK_DOR_MOTD,        0x80     # 1: turn on drive 3's motor
+
+.set FDC_MASK_MSR_ACTA,        0x01	# 1: Drive 0 is seeking
+.set FDC_MASK_MSR_ACTB,        0x02	# 1: Drive 1 is seeking
+.set FDC_MASK_MSR_ACTC,        0x04	# 1: Drive 2 is seeking
+.set FDC_MASK_MSR_ACTD,        0x08	# 1: Drive 3 is seeking
+.set FDC_MASK_MSR_CB,          0x10	# 1: Command busy (received), 0: end of result phase
+.set FDC_MASK_MSR_NDMA,        0x20	# 1: set in execution phase of PIO mode read/write commands only
+.set FDC_MASK_MSR_DIO,         0x40	# 1: set if fifo io port expects an IN opcode
+.set FDC_MASK_MSR_RQM,         0x80	# 1: set if it's ok to exchange bytes with the fifo io port
+
+#############################################################################
+
 #
 # Input Regs:
 #	None
@@ -74,21 +116,5 @@
 	addw    $(\port), %dx
 	outb    %al, %dx
 	subw    $(\port), %dx
-.endm
-
-#
-# Input Regs:
-# 	%dx: bus
-#
-# Output Regs:
-#	None
-#
-.macro DISK_PREPARE_READSECTOR_LBA28	drive, offset, count
-	DISK_OUTB ATA_PORT_DRIVE_SELECT , ((\offset >> 24) & 0xf) | ((\drive & 0x1) << 4) | ATA_MODE_LBA28
-	DISK_OUTB ATA_PORT_SECTOR_COUNT , \count
-	DISK_OUTB ATA_PORT_SECTOR       , (\offset >>  0) & 0xff
-	DISK_OUTB ATA_PORT_CYLINDER_LOW , (\offset >>  8) & 0xff
-	DISK_OUTB ATA_PORT_CYLINDER_HIGH, (\offset >> 16) & 0xff
-	DISK_OUTB ATA_PORT_COMMAND      , ATA_CMD_READSECTOR
 .endm
 

@@ -17,8 +17,8 @@
 #	%al: 0 = ready, 1 = error
 #
 
-.global disk_wait
-disk_wait:
+.global ata_wait
+ata_wait:
 	add     $(ATA_PORT_COMMAND), %dx
 1:	inb     %dx, %al
 	testb   $0x80, %al               # command is executing
@@ -45,14 +45,14 @@ disk_wait:
 #	None
 #
 
-.global disk_readsector
-disk_readsector:
+.global ata_readsector
+ata_readsector:
 	push    %ebx
 	push    %ecx
 	push    %edx
 	push    %edi
 
-	call    disk_wait
+	call    ata_wait
 
 	andl    $0x0000000f, %ecx
 	movb    %cl, %al
@@ -73,7 +73,7 @@ disk_readsector:
 	movb    %bl, %al
 	DISK_OUTB ATA_PORT_DRIVE_SELECT
 
-	call    disk_wait
+	call    ata_wait
 
 	# read sectors into buffer
 	shl     $7, %ecx	# %ecx * (512 / sizeof(int32)) = %ecx * 128 = %ecx * 2^7
@@ -85,5 +85,27 @@ disk_readsector:
 	push    %edx
 	push    %ecx
 	push    %ebx
+	ret
+
+#
+#
+#
+#
+#
+
+.global fdc_wait
+fdc_wait:
+
+	ret
+
+#
+#
+#
+#
+#
+
+.global fdc_readsector
+fdc_readsector:
+
 	ret
 
